@@ -53,6 +53,6 @@ class UserLogin(Resource):
             except:
                 return {"message": "An error occurred inserting the token."}, 500  # internal server error
 
-            return {'temporary_token': str(token)}, 200
+            return {'token': str(token)}, 200
 
         return {'message': 'Invalid credentials'}, 401

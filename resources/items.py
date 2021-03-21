@@ -25,7 +25,7 @@ class Item(Resource):
 
         token = TokenModel.find_by_token(user_token)
         if not token:
-            return {"message": "Token is incorrect"}, 500  # internal server error
+            return {"message": "Token is incorrect"}, 403
 
         if data['name'] == "":
             return {'message': 'The name of item cannot be left blank!'}, 400
@@ -38,7 +38,7 @@ class Item(Resource):
         try:
             item.save_to_db()
         except:
-            return {'message': 'An error occurred inserting the item.'}, 500
+            return {'message': 'An error occurred inserting the item.'}, 400
 
         return item.json(), 201  # for created
 
@@ -52,7 +52,7 @@ class ItemDelete(Resource):
 
         token = TokenModel.find_by_token(user_token)
         if not token:
-            return {"message": "Token is incorrect"}, 500  # internal server error
+            return {"message": "Token is incorrect"}, 403
 
         item = ItemModel.delete_from_db(id, token.user_id)
         if item == "false":
@@ -70,7 +70,7 @@ class ItemList(Resource):
             return {"message": "The token cannot be left blank!"}, 400
         token = TokenModel.find_by_token(user_token)
         if not token:
-            return {"message": "Token is incorrect"}, 400
+            return {"message": "Token is incorrect"}, 403
         items = [item.json() for item in ItemModel.find_all(token.user_id)]
         if items:
              return items, 200
@@ -99,7 +99,7 @@ class ItemTransfer(Resource):
 
         token = TokenModel.find_by_token(user_token)
         if not token:
-            return {"message": "Token is incorrect"}, 400
+            return {"message": "Token is incorrect"}, 403
 
         if not ItemModel.find_by_id(data['id'], token.user_id):
             return {'message': "An item with id '{}' does not exist.".format(data['id'])}, 400
@@ -113,7 +113,7 @@ class ItemTransfer(Resource):
         transfer_user = UserModel.find_by_login(data['login']).id
         transfer_item = TransferModel.save_to_db(transfer_user, data['id'])
         if transfer_item == "true":
-            return {"message": "Item has already transfered"}, 400
+            return {"message": "Item has already been transfered"}, 400
 
         response = "http://localhost:5000/get?id={0}".format(data['id'])
 
@@ -128,7 +128,7 @@ class ItemAccept(Resource):
 
         token = TokenModel.find_by_token(user_token)
         if not token:
-            return {"message": "Token is incorrect"}, 403  # internal server error
+            return {"message": "Token is incorrect"}, 403
 
         item_id = request.args.get('id')
         if not TransferModel.find_transfer(token.user_id,

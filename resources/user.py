@@ -51,7 +51,7 @@ class UserLogin(Resource):
             try:
                 token = TokenModel.save_to_db(temporary_token, user.id)
             except:
-                return {"message": "An error occurred inserting the token."}, 500  # internal server error
+                return {"message": "An error occurred inserting the token."}, 400
 
             return {'token': str(token)}, 200
 

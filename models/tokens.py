@@ -7,7 +7,6 @@ from datetime import datetime
 class TokenModel(db.Model):
     __tablename__ = 'tokens'
     token = db.Column(db.String(80), primary_key=True)
-    created = db.Column(db.DateTime, default=datetime.utcnow)
 
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     users = db.relationship('UserModel')

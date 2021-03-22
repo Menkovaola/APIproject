@@ -45,10 +45,9 @@ class Item(Resource):
 
 class ItemDelete(Resource):
     def delete(self, id):
-        if "token" in request.headers:
-            user_token = request.headers['token']
-        else:
-            return {"message": "The token cannot be left blank!"}, 400
+        user_token, error, code = validate_token(request.headers)
+        if error:
+            return error, code
 
         token = TokenModel.find_by_token(user_token)
         if not token:
@@ -64,10 +63,10 @@ class ItemList(Resource):
     parser = reqparse.RequestParser()
 
     def get(self):
-        if "token" in request.headers:
-            user_token = request.headers['token']
-        else:
-            return {"message": "The token cannot be left blank!"}, 400
+        user_token, error, code = validate_token(request.headers)
+        if error:
+            return error, code
+
         token = TokenModel.find_by_token(user_token)
         if not token:
             return {"message": "Token is incorrect"}, 403
@@ -92,10 +91,9 @@ class ItemTransfer(Resource):
                             help="This field cannot be left blank!"
                             )
         data = parser.parse_args()
-        if "token" in request.headers:
-            user_token = request.headers['token']
-        else:
-            return {"message": "The token cannot be left blank!"}, 400
+        user_token, error, code = validate_token(request.headers)
+        if error:
+            return error, code
 
         token = TokenModel.find_by_token(user_token)
         if not token:
@@ -121,10 +119,9 @@ class ItemTransfer(Resource):
 
 class ItemAccept(Resource):
     def get(self):
-        if "token" in request.headers:
-            user_token = request.headers['token']
-        else:
-            return {"message": "The token cannot be left blank!"}, 400
+        user_token, error, code = validate_token(request.headers)
+        if error:
+            return error, code
 
         token = TokenModel.find_by_token(user_token)
         if not token:

@@ -6,6 +6,14 @@ from models.transfer import TransferModel
 from models.user import UserModel
 
 
+def validate_token(headers):
+    if "token" in headers:
+        user_token = headers['token']
+        return user_token, None, None
+    else:
+        return None, {"message": "The token cannot be left blank!"}, 400
+
+
 class Item(Resource):
     # it goes into the body of the request and extracts the data.
     parser = reqparse.RequestParser()  # data is in body of request
@@ -18,10 +26,9 @@ class Item(Resource):
                             help="This field cannot be left blank!"
                             )
         data = parser.parse_args()
-        if "token" in request.headers:
-            user_token = request.headers['token']
-        else:
-            return {"message": "The token cannot be left blank!"}, 400
+        user_token, error, code = validate_token(request.headers)
+        if error:
+            return error, code
 
         token = TokenModel.find_by_token(user_token)
         if not token:
@@ -55,7 +62,7 @@ class ItemDelete(Resource):
 
         item = ItemModel.delete_from_db(id, token.user_id)
         if item == "false":
-              return {'message': "An item with id '{}' does not exist.".format(id)}, 400
+            return {'message': "An item with id '{}' does not exist.".format(id)}, 400
         return {'message': 'Item deleted'}
 
 
@@ -72,8 +79,9 @@ class ItemList(Resource):
             return {"message": "Token is incorrect"}, 403
         items = [item.json() for item in ItemModel.find_all(token.user_id)]
         if items:
-             return items, 200
+            return items, 200
         return {"message": "You don't have items"}, 400
+
 
 class ItemTransfer(Resource):
     parser = reqparse.RequestParser()
@@ -117,6 +125,7 @@ class ItemTransfer(Resource):
 
         return {"message": response}, 200
 
+
 class ItemAccept(Resource):
     def get(self):
         user_token, error, code = validate_token(request.headers)
@@ -129,13 +138,13 @@ class ItemAccept(Resource):
 
         item_id = request.args.get('id')
         if not TransferModel.find_transfer(token.user_id,
-                         item_id):
+                                           item_id):
             return {"message": "This link is not available"}, 400
 
-        if ItemModel.transfer(item_id,token.user_id):
+        if ItemModel.transfer(item_id, token.user_id):
             return {"message": "Data transmission error"}, 400
 
-        if TransferModel.delete_transfer(token.user_id,item_id):
+        if TransferModel.delete_transfer(token.user_id, item_id):
             return {"message": "Data deletion error"}, 400
 
-        return {"message":"Data transfer completed successfully!"}, 200
+        return {"message": "Data transfer completed successfully!"}, 200
